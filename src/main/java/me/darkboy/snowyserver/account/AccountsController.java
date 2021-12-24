@@ -2,20 +2,19 @@ package me.darkboy.snowyserver.account;
 
 import me.darkboy.snowyserver.utils.PasswordUtils;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 @RequestMapping(path = "/accounts")
-public class RegisterController {
+public class AccountsController {
 
     private final AccountRepository accountRepository;
 
-    public RegisterController(AccountRepository accountRepository) {
+    public AccountsController(AccountRepository accountRepository) {
         this.accountRepository = accountRepository;
     }
 
@@ -73,7 +72,7 @@ public class RegisterController {
             String decryptedPassword = PasswordUtils.generateSecurePassword(password, found.getSalt());
 
             if (decryptedPassword.equals(found.getPassword())) {
-                return "Successfully login!";
+                return found.getToken();
             } else {
                 return "Wrong password";
             }
@@ -81,5 +80,50 @@ public class RegisterController {
         } else {
             return "Account doesn't exist!";
         }
+    }
+
+    @PostMapping(path = "/checkToken")
+    public @ResponseBody
+    String login(@RequestParam String token) {
+
+        if (accountRepository.findByToken(token) != null) {
+
+            SnowyAccount found = accountRepository.findByToken(token);
+
+            return found.getToken();
+
+        } else {
+            return "Account doesn't exist!";
+        }
+    }
+
+    @PostMapping(path = "/validToken")
+    public @ResponseBody
+    boolean token(@RequestParam String token) {
+        return accountRepository.findByToken(token) != null;
+    }
+
+    @PostMapping(path = "/searchFor")
+    public @ResponseBody
+    List<String> searchFor(@RequestParam String name) {
+
+        List<String> names = new ArrayList<>();
+        for (SnowyAccount account : accountRepository.findSnowyAccountsByNameContaining(name)) {
+            names.add(account.getName());
+        }
+
+        return names;
+    }
+
+    @GetMapping(path = "/fetchUsers")
+    public @ResponseBody
+    List<String> fetchUsers() {
+        List<String> accounts = new ArrayList<>();
+
+        for (SnowyAccount snowyAccount : accountRepository.findAll()) {
+            accounts.add(snowyAccount.getName());
+        }
+
+        return accounts;
     }
 }
