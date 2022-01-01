@@ -1,5 +1,6 @@
 package me.darkboy.snowyserver.account;
 
+import me.darkboy.snowyserver.entity.impl.SnowyAccount;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;

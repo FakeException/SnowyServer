@@ -1,5 +1,6 @@
 package me.darkboy.snowyserver.account;
 
+import me.darkboy.snowyserver.entity.impl.SnowyAccount;
 import me.darkboy.snowyserver.utils.PasswordUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -7,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Controller
 @RequestMapping(path = "/accounts")
@@ -23,6 +25,7 @@ public class AccountsController {
     String registerUser(@RequestParam String name,
                         @RequestParam String email,
                         @RequestParam String password,
+                        @RequestParam String picture,
                         HttpServletRequest request) {
 
         if (accountRepository.findByEmail(email) == null && accountRepository.findByName(name) == null) {
@@ -37,14 +40,19 @@ public class AccountsController {
                         String generatedSalt = PasswordUtils.getSalt(30);
                         String generatedPassword = PasswordUtils.generateSecurePassword(password, generatedSalt);
 
+                        String token = PasswordUtils.generateNewToken();
+
                         account.setSalt(generatedSalt);
                         account.setPassword(generatedPassword);
-                        account.setToken(PasswordUtils.generateNewToken());
+                        account.setToken(token);
                         account.setIp(request.getRemoteAddr());
                         account.setDisabled(false);
+
+                        account.setProfilePictureUrl(Objects.requireNonNullElse(picture, "none"));
+
                         accountRepository.save(account);
 
-                        return "User created!";
+                        return token;
                     } else {
                         return "Username problem";
                     }

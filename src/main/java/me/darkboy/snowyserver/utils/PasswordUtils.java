@@ -52,7 +52,7 @@ public class PasswordUtils {
    public static String generateNewToken() {
       byte[] randomBytes = new byte[24];
       RANDOM.nextBytes(randomBytes);
-      return base64Encoder.encodeToString(randomBytes);
+      return "token_" + base64Encoder.encodeToString(randomBytes);
    }
 
    public static boolean isValidEmailAddress(String email) {
